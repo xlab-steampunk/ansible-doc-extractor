@@ -103,14 +103,25 @@ Examples
 {{ examples | indent(4, True) }}
 {% endif %}
 
+{% macro result_desc(results, level) %}
+{%   for name, spec in results.items() %}
+{%     set ret = spec.returned %}
+{%     set typ = spec.type | default("any") %}
+{%     set sample = spec.sample %}
+  {{ "  " * level }}{{ name }} ({{ ret }}, {{ typ }}, {{ sample }})
+    {{ "  " * level }}{{ spec.description | rst_ify }}
+
+{%     if spec.contains %}
+{{ result_desc(spec.contains, level + 1) }}
+{%     endif %}
+{%   endfor %}
+{% endmacro %}
 
 {% if returndocs -%}
 Return Values
 -------------
 
-{% for key, value in returndocs|dictsort recursive -%}
-- {{ key }} ({{ value }})
-{% endfor %}
+{{ result_desc(returndocs, 0) }}
 {% endif %}
 
 
