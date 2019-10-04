@@ -7,23 +7,40 @@ API docs in the HTML form without having to manually copy the data already
 present in the module's metadata.
 
 
-Installation
-------------
+Quickstart
+----------
 
-Currently, no version has been published yet on PyPI. But installing from
-source is also relatively simple if you have ``pipenv`` installed::
+Documentation extractor is published on PyPI_ and we can install it using
+``pip``::
 
-   $ export export SETUPTOOLS_SCM_PRETEND_VERSION=1.0.0
-   $ pipenv update
+   $ pip install ansible-doc-extractor
 
-Now we can extract the documentation from our modules by running::
+If the previous command did not fail, we are ready to start extracting the
+documentation::
 
-   $ pipenv run ansible-doc-extract \
-       ~/path/to/output/folder \
-       ~/path/to/first/module.py \
-       ~/path/to/second/module.py
+   $ ansible-doc-extractor \
+       /tmp/output-folder \
+       ~/.ansible/collections/ansible_collections/my/col/plugins/modules/*.py
 
+This will extract the documentation from modules in ``my.col`` collection and
+place resulting rst files into ``/tmp/output-folder``.
 
 .. note::
-   Fragment loaded might have some troubles with collections that are not
-   installed yet.
+   Always extract documentation from installed collection. Documentation
+   fragment loader fails to combine various parts of the documentation
+   otherwise.
+
+.. _PyPI: https://pypi.org/
+
+
+Development setup
+-----------------
+
+Getting development environment up and running is relatively simple if we
+have ``pipenv`` installed::
+
+   $ pipenv update
+
+To test the extractor, we can run::
+
+   $ pipenv run ansible-doc-extractor
