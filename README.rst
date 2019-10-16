@@ -30,7 +30,43 @@ place resulting rst files into ``/tmp/output-folder``.
    fragment loader fails to combine various parts of the documentation
    otherwise.
 
+---------------
+Custom template
+---------------
+`ansible-doc-extractor` supports a custom Jinja2 template file via ``--template``. The following variables
+are sent to the template:
+
++--------------------+------------+-------------------------------------------------------------------------------------+--------------------------------------------------+
+| Variable name      | Type       | Description                                                                         | Module's documentation key                       |
++====================+============+=====================================================================================+==================================================+
+| short_description  | str        | Short description of a module.                                                      | short_description                                |
++--------------------+------------+-------------------------------------------------------------------------------------+--------------------------------------------------+
+| description        | str / list | Longer description of a module, type depends on the module's `description` type.    | description                                      |
++--------------------+------------+-------------------------------------------------------------------------------------+--------------------------------------------------+
+| requirements       | list       | Requirements needed on the host that executes this module.                          | requirements                                     |
++--------------------+------------+-------------------------------------------------------------------------------------+--------------------------------------------------+
+| options            | dict       | All module options, often called parameters or arguments.                           | options                                          |
++--------------------+------------+-------------------------------------------------------------------------------------+--------------------------------------------------+
+| notes              | list       | Module's additional notes.                                                          | notes                                            |
++--------------------+------------+-------------------------------------------------------------------------------------+--------------------------------------------------+
+| seealso            | list       | Details of any important information that doesn’t fit in one of the above sections. | seealso                                          |
++--------------------+------------+-------------------------------------------------------------------------------------+--------------------------------------------------+
+| deprecated         | str        | Marks modules that will be removed in future releases                               | deprecated                                       |
++--------------------+------------+-------------------------------------------------------------------------------------+--------------------------------------------------+
+| author             | str / list | Author of the module, type can vary depending on how many authors module has.       | author                                           |
++--------------------+------------+-------------------------------------------------------------------------------------+--------------------------------------------------+
+| metadata           | dict       | This section provides information about the module                                  | Refers to ANSIBLE_METADATA block in the module.  |
++--------------------+------------+-------------------------------------------------------------------------------------+--------------------------------------------------+
+| examples           | str        | Code examples                                                                       | Refers to EXAMPLES block in the module.          |
++--------------------+------------+-------------------------------------------------------------------------------------+--------------------------------------------------+
+| returndocs         | dict       | This section documents the information the module returns.                          | Refers to RETURN block in the module.            |
++--------------------+------------+-------------------------------------------------------------------------------------+--------------------------------------------------+
+
+You can always refer to the `default Jinja2 template`_.
+
+
 .. _PyPI: https://pypi.org/
+.. _`default Jinja2 template`: https://github.com/xlab-si/ansible-doc-extractor/blob/master/src/ansible_doc_extractor/templates/module.rst.j2
 
 
 Development setup
