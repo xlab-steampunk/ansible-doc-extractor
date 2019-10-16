@@ -65,11 +65,19 @@ def render_module_docs(output_folder, module, template):
         fd.write(template.render(doc))
 
 
-def render_docs(output, modules):
+def get_template(custom_template):
     env = Environment(loader=PackageLoader(__name__), trim_blocks=True)
     env.filters["rst_ify"] = rst_ify
-    template = env.get_template("module.rst.j2")
+    if custom_template:
+        template = env.from_string(custom_template.read())
+        custom_template.close()
+    else:
+        template = env.get_template("module.rst.j2")
+    return template
 
+
+def render_docs(output, modules, custom_template):
+    template = get_template(custom_template)
     for module in modules:
         render_module_docs(output, module, template)
 
@@ -87,8 +95,7 @@ class ArgParser(argparse.ArgumentParser):
 
 def create_argument_parser():
     parser = ArgParser(
-        description="Ansible documentation extractor",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description="Ansible documentation extractor"
     )
     parser.add_argument(
         "output", help="Output folder",
@@ -97,9 +104,13 @@ def create_argument_parser():
         "module", nargs="+",
         help="Module to extract documentation from",
     )
+    parser.add_argument(
+        "--template", type=argparse.FileType('r'),
+        help="Custom Jinja2 template used to generate documentation"
+    )
     return parser
 
 
 def main():
     args = create_argument_parser().parse_args()
-    render_docs(args.output, args.module)
+    render_docs(args.output, args.module, args.template)
