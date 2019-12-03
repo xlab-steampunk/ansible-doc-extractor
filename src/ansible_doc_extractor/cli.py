@@ -38,22 +38,11 @@ def rst_ify(text):
     return t
 
 
-def sort_options(options):
-    options = collections.OrderedDict(sorted(
-        options.items(), key=lambda x: (not x[1].get("required", False), x[0])
-    ))
-    for v in options.values():
-        if "suboptions" in v:
-            v["suboptions"] = sort_options(v["suboptions"])
-    return options
-
-
 def render_module_docs(output_folder, module, template):
     print("Rendering {}".format(module))
     doc, examples, returndocs, metadata = plugin_docs.get_docstring(
         module, fragment_loader,
     )
-    doc["options"] = sort_options(doc["options"])
     doc.update(
         examples=examples,
         returndocs=yaml.safe_load(returndocs),
