@@ -38,11 +38,19 @@ def rst_ify(text):
     return t
 
 
+def ensure_list(value):
+    if isinstance(value, list):
+        return value
+    return [value]
+
+
 def render_module_docs(output_folder, module, template):
     print("Rendering {}".format(module))
     doc, examples, returndocs, metadata = plugin_docs.get_docstring(
         module, fragment_loader,
     )
+    doc["author"] = ensure_list(doc["author"])
+    doc["description"] = ensure_list(doc["description"])
     doc.update(
         examples=examples,
         returndocs=yaml.safe_load(returndocs),
