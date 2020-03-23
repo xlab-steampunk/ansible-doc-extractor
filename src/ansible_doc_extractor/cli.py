@@ -122,8 +122,7 @@ def create_argument_parser():
     )
     parser.add_argument(
         "--template", type=argparse.FileType('r'),
-        help="Custom Jinja2 template used to generate documentation. "
-             "Can be rst or md."
+        help="Custom Jinja2 template used to generate documentation."
     )
     return parser
 
