@@ -75,6 +75,7 @@ def render_module_docs(output_folder, module, template, extension):
 
 def get_template(custom_template):
     env = Environment(loader=PackageLoader(__name__), trim_blocks=True)
+    env.filters["ensure_list"] = ensure_list
     if custom_template:
         extension = custom_template.name.split('.')[-2]
         if extension not in _supported_templates:

@@ -29,8 +29,9 @@ The below requirements are needed on the host that executes this module.
 {%     set req = spec.required | default("optional") %}
 {%     set typ = spec.type | default("any") %}
 {%     set def_val = spec.default | default("None") %}
+{%     set description = spec.description | ensure_list %}
   {{ "  " * level }}{{ name }} ({{ req }}, {{ typ }}, {{ def_val }})
-{%     for para in spec.description %}
+{%     for para in description %}
     {{ "  " * level }}{{ para | md_ify }}
 
 {%     endfor %}
