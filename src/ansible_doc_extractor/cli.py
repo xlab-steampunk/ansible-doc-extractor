@@ -44,18 +44,32 @@ def ensure_list(value):
     return [value]
 
 
+def convert_descriptions(data):
+    for definition in data.values():
+        if "description" in definition:
+            definition["description"] = ensure_list(definition["description"])
+        if "suboptions" in definition:
+            convert_descriptions(definition["suboptions"])
+        if "contains" in definition:
+            convert_descriptions(definition["contains"])
+
+
 def render_module_docs(output_folder, module, template):
     print("Rendering {}".format(module))
     doc, examples, returndocs, metadata = plugin_docs.get_docstring(
         module, fragment_loader,
     )
-    doc["author"] = ensure_list(doc["author"])
-    doc["description"] = ensure_list(doc["description"])
+
     doc.update(
         examples=examples,
         returndocs=yaml.safe_load(returndocs),
         metadata=metadata,
     )
+
+    doc["author"] = ensure_list(doc["author"])
+    doc["description"] = ensure_list(doc["description"])
+    convert_descriptions(doc["options"])
+    convert_descriptions(doc["returndocs"])
 
     module_rst_path = os.path.join(output_folder, doc["module"] + ".rst")
     with open(module_rst_path, "w") as fd:
