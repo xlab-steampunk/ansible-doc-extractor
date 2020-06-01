@@ -62,7 +62,7 @@ def render_module_docs(output_folder, module, template):
 
     doc.update(
         examples=examples,
-        returndocs=yaml.safe_load(returndocs),
+        returndocs=yaml.safe_load(returndocs) if returndocs else {},
         metadata=metadata,
     )
 
@@ -71,8 +71,15 @@ def render_module_docs(output_folder, module, template):
     convert_descriptions(doc["options"])
     convert_descriptions(doc["returndocs"])
 
-    module_rst_path = os.path.join(output_folder, doc["module"] + ".rst")
-    with open(module_rst_path, "w") as fd:
+    if "module" in doc:
+        name = doc["module"]
+        doc["plugin_type"] = "module"
+    else:
+        name = doc["name"].split(".")[-1]
+        doc["module"] = name
+
+    rst_path = os.path.join(output_folder, name + ".rst")
+    with open(rst_path, "w") as fd:
         fd.write(template.render(doc))
 
 
