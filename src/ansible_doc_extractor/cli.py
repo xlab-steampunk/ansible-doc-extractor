@@ -45,6 +45,7 @@ def md_ify(text):
     t = _URL.sub(r"\1", t)
     t = _CONST.sub(r"`\1`", t)
     t = _RULER.sub(r"------------", t)
+
     return t
 
 
@@ -98,6 +99,7 @@ def render_module_docs(output_folder, module, template, extension):
 def get_template(custom_template, markdown):
     env = Environment(loader=PackageLoader(__name__), trim_blocks=True)
     if custom_template:
+        env.filters["rst_ify"] = rst_ify
         template = env.from_string(custom_template.read())
         custom_template.close()
         extension = "rst"
@@ -115,7 +117,7 @@ def get_template(custom_template, markdown):
 def render_docs(output, modules, custom_template, markdown):
     template, extension = get_template(custom_template, markdown)
     for module in modules:
-        render_module_docs(output, module, template, markdown)
+        render_module_docs(output, module, template, extension)
 
 
 class ArgParser(argparse.ArgumentParser):
@@ -145,8 +147,9 @@ def create_argument_parser():
         help="Custom Jinja2 template used to generate documentation."
     )
     parser.add_argument(
-        "--markdown",
-        help="Generate markdown output files instead of rst."
+        "--markdown", action='store_true',
+        help="""Generate markdown output files instead of rst (default).
+                Ignored if --template is specified."""
     )
     return parser
 
