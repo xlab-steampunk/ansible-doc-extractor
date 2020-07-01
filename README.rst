@@ -30,6 +30,12 @@ place resulting rst files into ``/tmp/output-folder``.
    fragment loader fails to combine various parts of the documentation
    otherwise.
 
+------------------------
+RST and Markdown support
+------------------------
+
+By default `ansible-doc-extractor` will output files in .rst format using the built-in Jinja2 template for rst. Pass the ``--markdown`` flag to output files in markdown.
+
 ---------------
 Custom template
 ---------------
@@ -62,11 +68,15 @@ are sent to the template:
 | returndocs         | dict       | This section documents the information the module returns.                          | Refers to RETURN block in the module.            |
 +--------------------+------------+-------------------------------------------------------------------------------------+--------------------------------------------------+
 
-You can always refer to the `default Jinja2 template`_.
+The output files will use the same file extension as the custom template file.
+
+
+You can always refer to the `default Jinja2 template for rst`_ and the `default Jinja2 template for markdown`_.
 
 
 .. _PyPI: https://pypi.org/
-.. _`default Jinja2 template`: https://github.com/xlab-si/ansible-doc-extractor/blob/master/src/ansible_doc_extractor/templates/module.rst.j2
+.. _`default Jinja2 template for rst`: https://github.com/xlab-si/ansible-doc-extractor/blob/master/src/ansible_doc_extractor/templates/module.rst.j2
+.. _`default Jinja2 template for markdown`: https://github.com/xlab-si/ansible-doc-extractor/blob/master/src/ansible_doc_extractor/templates/module.md.j2
 
 
 Development setup

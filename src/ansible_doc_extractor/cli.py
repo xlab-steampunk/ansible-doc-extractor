@@ -54,38 +54,57 @@ def ensure_list(value):
     return [value]
 
 
+def convert_descriptions(data):
+    for definition in data.values():
+        if "description" in definition:
+            definition["description"] = ensure_list(definition["description"])
+        if "suboptions" in definition:
+            convert_descriptions(definition["suboptions"])
+        if "contains" in definition:
+            convert_descriptions(definition["contains"])
+
+
 def render_module_docs(output_folder, module, template, extension):
     print("Rendering {}".format(module))
     doc, examples, returndocs, metadata = plugin_docs.get_docstring(
         module, fragment_loader,
     )
-    doc["author"] = ensure_list(doc["author"])
-    doc["description"] = ensure_list(doc["description"])
+
     doc.update(
         examples=examples,
-        returndocs=yaml.safe_load(returndocs),
+        returndocs=yaml.safe_load(returndocs) if returndocs else {},
         metadata=metadata,
     )
-    module_rst_path = os.path.join(
+
+    doc["author"] = ensure_list(doc["author"])
+    doc["description"] = ensure_list(doc["description"])
+    convert_descriptions(doc["options"])
+    convert_descriptions(doc["returndocs"])
+
+    if "module" in doc:
+        name = doc["module"]
+        doc["plugin_type"] = "module"
+    else:
+        name = doc["name"].split(".")[-1]
+        doc["module"] = name
+
+    output_path = os.path.join(
         output_folder, doc["module"] + "." + extension
     )
-    with open(module_rst_path, "w") as fd:
+    with open(output_path, "w") as fd:
         fd.write(template.render(doc))
 
 
-def get_template(custom_template):
+def get_template(custom_template, markdown):
     env = Environment(loader=PackageLoader(__name__), trim_blocks=True)
-    env.filters["ensure_list"] = ensure_list
     if custom_template:
-        extension = custom_template.name.split('.')[-2]
-        if extension not in _supported_templates:
-            raise AttributeError(
-                "Template type not supported. Template type must be one of "
-                "the following types: {}".format(_supported_templates)
-            )
-        env.filters[extension + "_ify"] = globals()[extension + "_ify"]
         template = env.from_string(custom_template.read())
         custom_template.close()
+        extension = "rst"
+    elif markdown:
+        env.filters["md_ify"] = md_ify
+        template = env.get_template("module.md.j2")
+        extension = "md"
     else:
         env.filters["rst_ify"] = rst_ify
         template = env.get_template("module.rst.j2")
@@ -93,10 +112,10 @@ def get_template(custom_template):
     return template, extension
 
 
-def render_docs(output, modules, custom_template):
-    template, extension = get_template(custom_template)
+def render_docs(output, modules, custom_template, markdown):
+    template, extension = get_template(custom_template, markdown)
     for module in modules:
-        render_module_docs(output, module, template, extension)
+        render_module_docs(output, module, template, markdown)
 
 
 class ArgParser(argparse.ArgumentParser):
@@ -125,9 +144,13 @@ def create_argument_parser():
         "--template", type=argparse.FileType('r'),
         help="Custom Jinja2 template used to generate documentation."
     )
+    parser.add_argument(
+        "--markdown",
+        help="Generate markdown output files instead of rst."
+    )
     return parser
 
 
 def main():
     args = create_argument_parser().parse_args()
-    render_docs(args.output, args.module, args.template)
+    render_docs(args.output, args.module, args.template, args.markdown)

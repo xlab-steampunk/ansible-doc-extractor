@@ -1,3 +1,5 @@
+.. _{{ module }}_module:
+
 {% if short_description %}
 {%   set title = module + ' -- ' + short_description | rst_ify %}
 {% else %}
@@ -108,8 +110,11 @@ Examples
 {%     set ret = spec.returned %}
 {%     set typ = spec.type | default("any") %}
 {%     set sample = spec.sample %}
-  {{ "  " * level }}{{ name }} ({{ ret }}, {{ typ }}, {{ sample }})
-    {{ "  " * level }}{{ spec.description | rst_ify }}
+{{ "  " * level }}{{ name }} ({{ ret }}, {{ typ }}, {{ sample }})
+{%     for para in spec.description %}
+  {{ "  " * level }}{{ para | rst_ify }}
+
+{%     endfor %}
 
 {%     if spec.contains %}
 {{ result_desc(spec.contains, level + 1) }}
