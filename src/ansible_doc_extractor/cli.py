@@ -60,9 +60,13 @@ def render_module_docs(output_folder, module, template):
         module, fragment_loader,
     )
 
+    returndocs = returndocs or {}
+    if isinstance(returndocs, str):
+        returndocs = yaml.safe_load(returndocs)
+
     doc.update(
         examples=examples,
-        returndocs=yaml.safe_load(returndocs) if returndocs else {},
+        returndocs=returndocs,
         metadata=metadata,
     )
 
