@@ -5,6 +5,7 @@ import os.path
 import re
 import sys
 
+from ansible.plugins.filter.core import to_yaml
 from ansible.plugins.loader import fragment_loader
 from ansible.utils import plugin_docs
 
@@ -90,6 +91,7 @@ def render_module_docs(output_folder, module, template):
 def get_template(custom_template):
     env = Environment(loader=PackageLoader(__name__), trim_blocks=True)
     env.filters["rst_ify"] = rst_ify
+    env.filters["to_yaml"]= to_yaml
     if custom_template:
         template = env.from_string(custom_template.read())
         custom_template.close()
