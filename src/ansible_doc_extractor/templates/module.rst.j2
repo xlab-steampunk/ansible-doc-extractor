@@ -41,11 +41,9 @@ The below requirements are needed on the host that executes this module.
 {%     set req = spec.required | default("optional") %}
 {%     set typ = spec.type | default("any") %}
 {%     set def_val = spec.default | default("None") %}
-   * - {{ name }} ({{ req }}) {{ typ }}
-     - {{ def_val }}
-{%     for para in spec.description %}
-     - {{ para | rst_ify }}
-
+    | {{ name }}({{ req }}){{ typ }} | {{ def_val }} |
+{%-     for para in spec.description %}
+    {{ para | rst_ify }} |
 {%     endfor %}
 
 {%     if spec.suboptions %}
@@ -58,13 +56,17 @@ The below requirements are needed on the host that executes this module.
 Parameters
 ----------
 
-.. list-table::
-   :widths: 25 25 50
-   :header-rows: 1
-
-   * - Parameter
-     - Choices/Defaults
-     - Comments
++------------------------+------------+----------+----------+
+| Parameters             | Header 2   | Header 3 | Header 4 |
++========================+============+==========+==========+
+| body row 1, column 1   | column 2   | column 3 | column 4 |
++------------------------+------------+----------+----------+
+| body row 2             | Cells may span columns.          |
++------------------------+------------+---------------------+
+| body row 3             | Cells may  | - Table cells       |
++------------------------+ span rows. | - contain           |
+| body row 4             |            | - body elements.    |
++------------------------+------------+---------------------+
 
 {{ option_desc(options, 0) }}
 {% endif %}

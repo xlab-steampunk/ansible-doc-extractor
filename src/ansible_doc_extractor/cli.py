@@ -58,6 +58,14 @@ def convert_descriptions(data):
         if "contains" in definition:
             convert_descriptions(definition["contains"])
 
+def build_table(data):
+    # TODO: Iterate over objects and find the max char length for each column O(n)
+    # column_break = ""
+    # for curr_item in column_items:
+    #    spaces = (max_column(len(items)) - len(curr_item)) / 2
+    #    column_break += "+" + "-" * spaces*2 + "+"
+    #    row = "|" + " " * spaces + curr_item + " " * spaces + "|"
+    pass
 
 def render_module_docs(output_folder, module, template):
     print("Rendering {}".format(module))
