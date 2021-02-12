@@ -68,7 +68,15 @@ Parameters
 | body row 4             |            | - body elements.    |
 +------------------------+------------+---------------------+
 
+<<<<<<< HEAD
 {{ option_desc(options, 0) }}
+=======
+{% for row in build_table(options) -%}
+{{ row }}
+{% endfor %}
+
+{# { option_desc(options, 0) } #}
+>>>>>>> Fixed spacing to improve generation
 {% endif %}
 
 
