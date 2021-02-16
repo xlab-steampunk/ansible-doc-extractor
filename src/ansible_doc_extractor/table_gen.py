@@ -61,7 +61,7 @@ class Table(object):
         self.head_node = None
         self.tail_node = None
 
-    def _build_row_cells(self, data):
+    def _build_row_cells(self, param, data):
         cells = []
         for k, v in data_value.items():
             if k.lower() == "description":
@@ -80,34 +80,32 @@ class Table(object):
                 cells.append(Cell(k, CELL_TYPE.PARAM))
         return cells
 
-    def _build_row_dll(self, curr_node, data):
-        curr_node.cells = self._build_row_cells(data)
-        if data.get('suboptions'):
-            suboptions = data['suboptions'].keys()
-            sub_head_opt = suboptions.pop()
-            sub_head_node = RowNode()
-            curr_node.next = sub_head_node
-            sub_head_node.prev = curr_node
-            
-            _build_row_dll(head_opt, data['suboptions'][sub_head_opt])
-
-            #next_node = RowNode()
-            #curr_node.next_node = next_node
-            #curr_node.prev_node = head_node
-            for option in v.keys():
-                #row_node.next = self.row_tail
-                _build_row_dll(future_node, v[option])
-                future_node = RowNode()
-                future_node.prev = self.tail_node
-                next_node.next = future_node
-                future_node.prev = next_node
-            self.tail_node = future_node
-        else:
-            # In this case the curr node was the last suboption
-            self.tail_node = curr_node
-
     def _build_row_str(self):
         pass
 
-    def build_table(self):
-        pass
+    def _build_row_dll(self, head_node, data):
+        future_node = RowNode()
+        head_node.next_node = future_node
+        future_node.prev_node = head_node
+        for k, v in data.items():
+            future_node.cells = self._build_row_cells(k, v)
+            if v.get('suboptions'):
+                tail_node = self._build_row_dll(future_node, v['suboptions'])
+                future_node = RowNode()
+                tail_node.next_node = future_node
+                future_node.prev_node = tail_node
+            else:
+                temp_node = future_node
+                future_node = RowNode()
+                temp_node.next_node = future_node
+                future_node.prev_node = temp_node
+            future_node.next_node = None
+        return future_node
+
+
+    def build_table(self, data):
+        self.head_node = RowNode()
+        self.head_node.prev = None
+        # TODO: self.head_node.cells = 
+        if data:
+            self._buid_row_dll(self.head_node, data)
