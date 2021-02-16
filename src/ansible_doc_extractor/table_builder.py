@@ -47,9 +47,9 @@ def row_builder(col1, col2, col3):
     global max_col_comment
 
     cell_padding = lambda x, y: x + " " * y
-    col1_str = cell_padding(col1, abs(len(col1) - max_col_param)).encode('UTF-8')
-    col2_str = cell_padding(col2, abs(len(col2) - max_col_default)).encode('UTF-8')
-    col3_str = cell_padding(col3, abs(len(col3) - max_col_comment)).encode('UTF-8')
+    col1_str = cell_padding(col1, abs(len(col1) - max_col_param))
+    col2_str = cell_padding(col2, abs(len(col2) - max_col_default))
+    col3_str = cell_padding(col3, abs(len(col3) - max_col_comment))
 
     row_str = "| {} | {} | {} |".format(col1_str, col2_str, col3_str)
     return row_str
@@ -84,14 +84,14 @@ def build_table(data):
 
     fill = lambda x, y: x*y
 
-    h1_fill = fill("=", max_col_param + 5)
-    h2_fill = fill("=", max_col_default + 5)
-    h3_fill = fill("=", max_col_comment + 5)
+    h1_fill = fill("=", max_col_param + 2)
+    h2_fill = fill("=", max_col_default + 2)
+    h3_fill = fill("=", max_col_comment + 2)
     header_spacer = "+{}+{}+{}+".format(h1_fill, h2_fill, h3_fill)
     
-    col1_fill = fill("-", max_col_param + 5)
-    col2_fill = fill("-", max_col_default + 5)
-    col3_fill = fill("-", max_col_comment + 5)
+    col1_fill = fill("-", max_col_param + 2)
+    col2_fill = fill("-", max_col_default + 2)
+    col3_fill = fill("-", max_col_comment + 2)
     row_spacer = "+{}+{}+{}+".format(col1_fill, col2_fill, col3_fill)
 
     table.append(row_spacer)

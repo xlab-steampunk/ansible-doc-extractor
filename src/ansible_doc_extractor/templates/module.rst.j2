@@ -56,27 +56,10 @@ The below requirements are needed on the host that executes this module.
 Parameters
 ----------
 
-+------------------------+------------+----------+----------+
-| Parameters             | Header 2   | Header 3 | Header 4 |
-+========================+============+==========+==========+
-| body row 1, column 1   | column 2   | column 3 | column 4 |
-+------------------------+------------+----------+----------+
-| body row 2             | Cells may span columns.          |
-+------------------------+------------+---------------------+
-| body row 3             | Cells may  | - Table cells       |
-+------------------------+ span rows. | - contain           |
-| body row 4             |            | - body elements.    |
-+------------------------+------------+---------------------+
-
-<<<<<<< HEAD
-{{ option_desc(options, 0) }}
-=======
 {% for row in build_table(options) -%}
 {{ row }}
 {% endfor %}
 
-{# { option_desc(options, 0) } #}
->>>>>>> Fixed spacing to improve generation
 {% endif %}
 
 
