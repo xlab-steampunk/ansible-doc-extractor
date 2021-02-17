@@ -56,56 +56,71 @@ class Table(object):
 
     def __init__(self):
         self.max_param_len = 0
-        self.max_default_len = 0
+        self.max_cho_def_len = 0
         self.max_comment_len = 0
         self.head_node = None
         self.tail_node = None
 
     def _build_row_cells(self, param, data):
         cells = []
-        for k, v in data_value.items():
-            if k.lower() == "description":
-                if len(v[0]) >  self.max_col_comment:
-                    # Description element is wrapped in a list block though it is just a single entry
-                    max_col_comment = len(v[0])
-                cells.append(Cell(v[0], CELL_TYPE.COMMENT))
-            elif k.lower() == "choices":
-                cho_str = str(v[0])
-                if len(cho_str) > self.max_col_default:
-                    max_col_default = len(cho_str)
-                cells.append(Cell(cho_str, CELL_TYPE.CHO_DEF))
-            elif k.lower() != 'required': ## Therefore is the param column
-                if len(k) >  self.max_col_param:
-                    max_col_param = len(k)
-                cells.append(Cell(k, CELL_TYPE.PARAM))
+        
+        if len(param) > self.max_param_len:
+            self.max_param_len = len(param)
+            cells.append(Cell(param, CELL_TYPE.PARAM))
+
+        description = ""
+        if data.get("description"):
+            # Description element is wrapped in a list block though it is just a single entry
+            description = data["description"][0]
+            if len(description) > self.max_comment_len:
+                self.max_comment_len = len(description)
+        cells.append(Cell(description, CELL_TYPE.COMMENT))
+
+        cho_def = ""
+        if data.get("choices"):
+            cho_def = str(data["choices"])
+            if len(cho_def) > self.max_cho_def_len:
+                self.max_cho_def_len = len(cho_def)
+        cells.append(Cell(cho_def, CELL_TYPE.CHO_DEF))
+
         return cells
 
     def _build_row_str(self):
         pass
 
-    def _build_row_dll(self, head_node, data):
+    def _build_row_dll(self, head_node, data, level=0):
         future_node = RowNode()
         head_node.next_node = future_node
         future_node.prev_node = head_node
+
         for k, v in data.items():
             future_node.cells = self._build_row_cells(k, v)
             if v.get('suboptions'):
-                tail_node = self._build_row_dll(future_node, v['suboptions'])
+                tail_node = self._build_row_dll(future_node, v['suboptions'], level+1)
+                #TODO: Add spacer
+                #spacer = RowSpacerNode("=", 0)
                 future_node = RowNode()
                 tail_node.next_node = future_node
                 future_node.prev_node = tail_node
             else:
+                #TODO: Add spacer
+                #spacer = RowSpacerNode("=", 0)
+
                 temp_node = future_node
                 future_node = RowNode()
                 temp_node.next_node = future_node
                 future_node.prev_node = temp_node
-            future_node.next_node = None
+            future_node.next_node = None # Ensure that no next is set if at the end
         return future_node
 
-
     def build_table(self, data):
+        header_spacer = RowSpacerNode("=", 3)
         self.head_node = RowNode()
-        self.head_node.prev = None
+        self.head_node.prev_node = header_spacer
+        header_spacer.next_node = self.head_node
+        row_spacer = RowSpacerNode('-', 3)
+        row_spacer.prev_node = self.head_node
+        self.head_node.next_node = row_spacer
         # TODO: self.head_node.cells = 
         if data:
-            self._buid_row_dll(self.head_node, data)
+            self._build_row_dll(self.head_node, data)

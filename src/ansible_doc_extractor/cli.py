@@ -18,6 +18,8 @@ from jinja2.runtime import Undefined
 
 import yaml
 
+from ansible_doc_extractor import table_gen
+
 
 # The rst_ify filter has been shamelessly stolen from the Ansible helpers in
 # hacking subfolder. So all of the credit goes to the Ansible authors.
@@ -97,7 +99,8 @@ def render_module_docs(output_folder, module, template):
 
     rst_path = os.path.join(output_folder, name + ".rst")
     with open(rst_path, "wb") as fd:
-        fd.write(template.render(doc, build_table=table_builder.build_table).encode("utf-8"))
+        table = table_gen.Table()
+        fd.write(template.render(doc, build_table=table.build_table).encode("utf-8"))
 
 
 def get_template(custom_template):
