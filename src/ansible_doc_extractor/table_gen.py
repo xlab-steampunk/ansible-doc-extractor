@@ -32,7 +32,9 @@ class ListNode(object):
 
 
 class RowNode(ListNode):
-    cells = []
+
+    def __init__(self):
+        self.cells = []
 
     def __str__(self, max_param_len, max_cho_def_len, max_comment_len):
         row_str = "|"
@@ -104,22 +106,25 @@ class Table(object):
         self.head_node = None
         self.tail_node = None
 
-    def _build_row_cells(self, param, data, level):
+    def _build_row(self, future_node, param, data, level):
 
-        cells = []
+        # Create list of indent cells
+        indent_cells = []
         for i in range(level):
-            cells.append(Cell(" ", CELL_TYPE.INDENT))
+            indent_cells.append(Cell(" ", CELL_TYPE.INDENT))
+        future_node.cells.extend(indent_cells)
+
         param_len = len(param) + level*4 # |---| is 5 char, but first | is expected. So only need 4 extra char per level
         if param_len > self.max_param_len:
             self.max_param_len = param_len
-        cells.append(Cell(param, CELL_TYPE.PARAM))
+        future_node.cells.append(Cell(param, CELL_TYPE.PARAM))
 
         cho_def = ""
         if data.get("choices"):
             cho_def = str(data["choices"])
             if len(cho_def) > self.max_cho_def_len:
                 self.max_cho_def_len = len(cho_def)
-        cells.append(Cell(cho_def, CELL_TYPE.CHO_DEF))
+        future_node.cells.append(Cell(cho_def, CELL_TYPE.CHO_DEF))
 
         description = ""
         if data.get("description"):
@@ -127,11 +132,21 @@ class Table(object):
             description = data["description"][0]
             if len(description) > self.max_comment_len:
                 self.max_comment_len = len(description)
-        cells.append(Cell(description, CELL_TYPE.COMMENT))
-        return cells
+        future_node.cells.append(Cell(description, CELL_TYPE.COMMENT))
 
-    def _build_row_str(self):
-        pass
+        # Add extra RowNode for required tag
+        if data.get("required") == True:
+            required_node = RowNode()
+            required_node.cells = indent_cells
+            required_node.cells.append(Cell("required", CELL_TYPE.PARAM))
+            required_node.cells.append(Cell(" ", CELL_TYPE.CHO_DEF))
+            required_node.cells.append(Cell(" ", CELL_TYPE.COMMENT))
+
+            future_node.next_node = required_node
+            required_node.prev_node = future_node
+            future_node = required_node
+
+        return future_node
 
     def _add_spacer(self, future_node, level=0):
         row_spacer = RowSpacerNode("-", level)
@@ -140,7 +155,9 @@ class Table(object):
 
         # Update level of upper spacer to allow for column creation
         upper_spacer = row_spacer.prev_node.prev_node
-        assert type(upper_spacer) == type(row_spacer)
+        if type(upper_spacer) != type(row_spacer):
+            upper_spacer = upper_spacer.prev_node
+
         level_delta = row_spacer.level - upper_spacer.level
         if level_delta > 0:
             upper_spacer.level += level_delta
@@ -154,7 +171,7 @@ class Table(object):
         future_node.prev_node = head_node
 
         options = list(data.keys())
-        future_node.cells = self._build_row_cells(options[0], data[options[0]], level)
+        future_node = self._build_row(future_node, options[0], data[options[0]], level)
         row_spacer = self._add_spacer(future_node, level)
 
         tail_node = None
@@ -167,7 +184,7 @@ class Table(object):
             future_node = RowNode()
             future_node.prev_node = row_spacer
             row_spacer.next_node = future_node
-            future_node.cells = self._build_row_cells( param, param_val_dict, level)
+            future_node = self._build_row(future_node, param, param_val_dict, level)
             row_spacer = self._add_spacer(future_node, level)
 
             if param_val_dict.get('suboptions'):
@@ -187,7 +204,8 @@ class Table(object):
         head_node.next_node = head_row_node
         head_dict = {'description': ['Comment'],
                      'choices': 'Choices/Defaults'}
-        head_row_node.cells = self._build_row_cells('Parameters', head_dict, level=0)
+
+        head_row_node = self._build_row(head_row_node, 'Parameters', head_dict, level=0)
 
         head_spacer = RowSpacerNode('=')
         head_spacer.prev_node = head_row_node
