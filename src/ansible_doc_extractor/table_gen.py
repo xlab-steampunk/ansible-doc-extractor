@@ -64,8 +64,20 @@ class RowSpacerNode(ListNode):
         super().__init__(next_node, prev_node)
 
     def __str__(self, max_param_len, max_cho_def_len, max_comment_len):
-        #fill = lambda x, y: x*y
-        return " "
+        fill = lambda x, y: x*y
+
+        row_spacer = "+"
+        for i in range(self.level):
+            indent_spacer = fill(self.spacer_char, 3)
+            row_spacer += indent_spacer + "+"
+            max_param_len -= len(indent_spacer) + 1
+
+        col1_fill = fill(self.spacer_char, max_param_len + 2)
+        col2_fill = fill(self.spacer_char, max_cho_def_len + 2)
+        col3_fill = fill(self.spacer_char, max_comment_len + 2)
+        row_spacer += "{}+{}+{}+".format(col1_fill, col2_fill, col3_fill)
+
+        return row_spacer
 
 
 
@@ -97,7 +109,7 @@ class Table(object):
         cells = []
         for i in range(level):
             cells.append(Cell(" ", CELL_TYPE.INDENT))
-        param_len = len(param) + level
+        param_len = len(param) + level*4 # |---| is 5 char, but first | is expected. So only need 4 extra char per level
         if param_len > self.max_param_len:
             self.max_param_len = param_len
         cells.append(Cell(param, CELL_TYPE.PARAM))
@@ -156,7 +168,7 @@ class Table(object):
             future_node.prev_node = row_spacer
             row_spacer.next_node = future_node
             future_node.cells = self._build_row_cells( param, param_val_dict, level)
-            row_spacer = self._add_spacer(future_node)
+            row_spacer = self._add_spacer(future_node, level)
 
             if param_val_dict.get('suboptions'):
                 tail_node = self._build_row_dll(row_spacer, param_val_dict['suboptions'], level+1)
@@ -169,18 +181,17 @@ class Table(object):
         return row_spacer
 
     def build_table(self, data):
-                # TODO: self.head_node.cells = 
-        row_spacer = RowSpacerNode("-", 3)
-        head_node = RowNode()
-        head_node.prev_node = row_spacer
-        row_spacer.next_node = head_node
+        head_node = RowSpacerNode("-")
+        head_row_node = RowNode()
+        head_row_node.prev_node = head_node
+        head_node.next_node = head_row_node
         head_dict = {'description': ['Comment'],
                      'choices': 'Choices/Defaults'}
-        head_node.cells = self._build_row_cells('Parameters', head_dict, level=0)
+        head_row_node.cells = self._build_row_cells('Parameters', head_dict, level=0)
 
-        head_spacer = RowSpacerNode('=', 3)
-        head_spacer.prev_node = head_node
-        head_node.next_node = head_spacer
+        head_spacer = RowSpacerNode('=')
+        head_spacer.prev_node = head_row_node
+        head_row_node.next_node = head_spacer
 
         if data:
             self._build_row_dll(head_spacer, data)
