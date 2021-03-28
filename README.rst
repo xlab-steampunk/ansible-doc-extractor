@@ -13,7 +13,10 @@ Quickstart
 Documentation extractor is published on PyPI_ and we can install it using
 ``pip``::
 
-   $ pip install ansible-doc-extractor
+   $ pip install ansible-doc-extractor  # If we already have ansible installed
+   $ pip install ansible-doc-extractor[ansible]  # To also install ansible
+   $ pip install ansible-doc-extractor[base]  # To also install ansible-base
+   $ pip install ansible-doc-extractor[core]  # To also install ansible-core
 
 If the previous command did not fail, we are ready to start extracting the
 documentation::
