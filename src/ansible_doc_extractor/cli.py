@@ -5,9 +5,13 @@ import os.path
 import re
 import sys
 
-from ansible.plugins.filter.core import to_yaml
-from ansible.plugins.loader import fragment_loader
-from ansible.utils import plugin_docs
+try:
+    from ansible.plugins.filter.core import to_yaml
+    from ansible.plugins.loader import fragment_loader
+    from ansible.utils import plugin_docs
+    HAS_ANSIBLE = True
+except ImportError:
+    HAS_ANSIBLE = False
 
 from jinja2 import Environment, PackageLoader
 from jinja2.runtime import Undefined
@@ -136,5 +140,12 @@ def create_argument_parser():
 
 
 def main():
+    if not HAS_ANSIBLE:
+        print(
+            "Please install 'ansible' or 'ansible-base' or 'ansible-core'.",
+            file=sys.stderr
+        )
+        sys.exit(1)
+
     args = create_argument_parser().parse_args()
     render_docs(args.output, args.module, args.template)
