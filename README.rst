@@ -75,11 +75,12 @@ You can always refer to the `default Jinja2 template`_.
 Development setup
 -----------------
 
-Getting development environment up and running is relatively simple if we
-have ``pipenv`` installed::
+Getting development environment up and running is relatively simple::
 
-   $ pipenv update
+   $ python3 -m venv venv
+   $ . venv/bin/activate
+   (venv) $ pip install -e .
 
 To test the extractor, we can run::
 
-   $ pipenv run ansible-doc-extractor
+   $ ansible-doc-extractor
