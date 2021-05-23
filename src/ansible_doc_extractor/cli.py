@@ -93,7 +93,7 @@ def render_module_docs(output_folder, module, template):
 
 
 def get_template(custom_template):
-    env = Environment(loader=PackageLoader(__name__), trim_blocks=True)
+    env = Environment(loader=PackageLoader("ansible_doc_extractor"), trim_blocks=True)
     env.filters["rst_ify"] = rst_ify
     env.filters["to_yaml"]= to_yaml
     if custom_template:
