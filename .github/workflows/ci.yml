@@ -26,3 +26,7 @@ jobs:
 
       - name: Install extractor and ansible-core
         run: pip install .[core]
+
+      - name: Run tests
+        run: ./run.sh
+        working-directory: ./tests/integration/basic
