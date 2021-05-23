@@ -1,0 +1,6 @@
+.eggs
+__pycache__
+src/ansible_doc_extractor.egg-info/
+dist
+build
+venv
