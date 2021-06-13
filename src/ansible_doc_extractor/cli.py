@@ -77,7 +77,7 @@ def render_module_docs(output_folder, module, template):
 
     doc["author"] = ensure_list(doc["author"])
     doc["description"] = ensure_list(doc["description"])
-    convert_descriptions(doc["options"])
+    convert_descriptions(doc.get("options", {}))
     convert_descriptions(doc["returndocs"])
 
     if "module" in doc:
