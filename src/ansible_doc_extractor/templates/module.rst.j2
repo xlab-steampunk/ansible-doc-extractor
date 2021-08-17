@@ -41,10 +41,9 @@ The below requirements are needed on the host that executes this module.
 {%     set req = spec.required | default("optional") %}
 {%     set typ = spec.type | default("any") %}
 {%     set def_val = spec.default | default("None") %}
-  {{ "  " * level }}{{ name }} ({{ req }}, {{ typ }}, {{ def_val }})
-{%     for para in spec.description %}
-    {{ "  " * level }}{{ para | rst_ify }}
-
+    | {{ name }}({{ req }}){{ typ }} | {{ def_val }} |
+{%-     for para in spec.description %}
+    {{ para | rst_ify }} |
 {%     endfor %}
 
 {%     if spec.suboptions %}
@@ -57,7 +56,10 @@ The below requirements are needed on the host that executes this module.
 Parameters
 ----------
 
-{{ option_desc(options, 0) }}
+{% for row in build_table(options) -%}
+{{ row }}
+{% endfor %}
+
 {% endif %}
 
 
