@@ -13,7 +13,10 @@ Quickstart
 Documentation extractor is published on PyPI_ and we can install it using
 ``pip``::
 
-   $ pip install ansible-doc-extractor
+   $ pip install ansible-doc-extractor  # If we already have ansible installed
+   $ pip install ansible-doc-extractor[ansible]  # To also install ansible
+   $ pip install ansible-doc-extractor[base]  # To also install ansible-base
+   $ pip install ansible-doc-extractor[core]  # To also install ansible-core
 
 If the previous command did not fail, we are ready to start extracting the
 documentation::
@@ -82,11 +85,12 @@ You can always refer to the `default Jinja2 template for rst`_ and the `default 
 Development setup
 -----------------
 
-Getting development environment up and running is relatively simple if we
-have ``pipenv`` installed::
+Getting development environment up and running is relatively simple::
 
-   $ pipenv update
+   $ python3 -m venv venv
+   $ . venv/bin/activate
+   (venv) $ pip install -e .
 
 To test the extractor, we can run::
 
-   $ pipenv run ansible-doc-extractor
+   $ ansible-doc-extractor

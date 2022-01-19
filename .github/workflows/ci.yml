@@ -1,0 +1,32 @@
+---
+name: CI
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  schedule:
+    # Run test at 03:04 UTC on mon,wed,fri
+    - cron: "3 4 * * 1,3,5"
+
+jobs:
+  integration:
+    name: Integration tests
+    strategy:
+      matrix:
+        python: [ "3.6", "3.7", "3.8", "3.9" ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code
+        uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install extractor and ansible-core
+        run: pip install .[core]
+
+      - name: Run tests
+        run: ./run.sh
+        working-directory: ./tests/integration/basic

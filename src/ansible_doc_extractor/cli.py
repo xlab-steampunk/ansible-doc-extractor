@@ -3,8 +3,13 @@ import os.path
 import re
 import sys
 
-from ansible.plugins.loader import fragment_loader
-from ansible.utils import plugin_docs
+try:
+    from ansible.plugins.filter.core import to_yaml
+    from ansible.plugins.loader import fragment_loader
+    from ansible.utils import plugin_docs
+    HAS_ANSIBLE = True
+except ImportError:
+    HAS_ANSIBLE = False
 
 from jinja2 import Environment, PackageLoader
 
@@ -71,15 +76,19 @@ def render_module_docs(output_folder, module, template, extension):
         module, fragment_loader,
     )
 
+    returndocs = returndocs or {}
+    if isinstance(returndocs, str):
+        returndocs = yaml.safe_load(returndocs)
+
     doc.update(
         examples=examples,
-        returndocs=yaml.safe_load(returndocs) if returndocs else {},
+        returndocs=returndocs,
         metadata=metadata,
     )
 
     doc["author"] = ensure_list(doc["author"])
     doc["description"] = ensure_list(doc["description"])
-    convert_descriptions(doc["options"])
+    convert_descriptions(doc.get("options", {}))
     convert_descriptions(doc["returndocs"])
 
     if "module" in doc:
@@ -97,7 +106,9 @@ def render_module_docs(output_folder, module, template, extension):
 
 
 def get_template(custom_template, markdown):
-    env = Environment(loader=PackageLoader(__name__), trim_blocks=True)
+    env = Environment(loader=PackageLoader("ansible_doc_extractor"), trim_blocks=True)
+    env.filters["rst_ify"] = rst_ify
+    env.filters["to_yaml"]= to_yaml
     if custom_template:
         env.filters["rst_ify"] = rst_ify
         template = env.from_string(custom_template.read())
@@ -155,5 +166,12 @@ def create_argument_parser():
 
 
 def main():
+    if not HAS_ANSIBLE:
+        print(
+            "Please install 'ansible' or 'ansible-base' or 'ansible-core'.",
+            file=sys.stderr
+        )
+        sys.exit(1)
+
     args = create_argument_parser().parse_args()
     render_docs(args.output, args.module, args.template, args.markdown)
