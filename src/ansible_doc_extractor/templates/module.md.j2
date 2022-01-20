@@ -89,7 +89,9 @@ The below requirements are needed on the host that executes this module.
 {%     set typ = spec.type | default("any") %}
 {%     set sample = spec.sample %}
   {{ "  " * level }}{{ name }} ({{ ret }}, {{ typ }}, {{ sample }})
-    {{ "  " * level }}{{ spec.description | md_ify }}
+{% for desc_line in spec.description  %}
+    {{ "  " * level }}{{ desc_line | md_ify }}
+{% endfor %}
 
 {%     if spec.contains %}
 {{ result_desc(spec.contains, level + 1) }}
