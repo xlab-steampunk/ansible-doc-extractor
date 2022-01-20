@@ -1,6 +1,4 @@
 import argparse
-import collections
-import functools
 import os.path
 import re
 import sys
@@ -14,10 +12,11 @@ except ImportError:
     HAS_ANSIBLE = False
 
 from jinja2 import Environment, PackageLoader
-from jinja2.runtime import Undefined
 
 import yaml
 
+
+_supported_templates = ["rst", "md"]
 
 # The rst_ify filter has been shamelessly stolen from the Ansible helpers in
 # hacking subfolder. So all of the credit goes to the Ansible authors.
@@ -43,6 +42,18 @@ def rst_ify(text):
     return t
 
 
+def md_ify(text):
+    t = _ITALIC.sub(r"*\1*", text)
+    t = _BOLD.sub(r"**\1**", t)
+    t = _MODULE.sub(r"[\1](\1_module)", t)
+    t = _LINK.sub(r"[\1](\2)", t)
+    t = _URL.sub(r"\1", t)
+    t = _CONST.sub(r"`\1`", t)
+    t = _RULER.sub(r"------------", t)
+
+    return t
+
+
 def ensure_list(value):
     if isinstance(value, list):
         return value
@@ -59,7 +70,7 @@ def convert_descriptions(data):
             convert_descriptions(definition["contains"])
 
 
-def render_module_docs(output_folder, module, template):
+def render_module_docs(output_folder, module, template, extension):
     print("Rendering {}".format(module))
     doc, examples, returndocs, metadata = plugin_docs.get_docstring(
         module, fragment_loader,
@@ -87,27 +98,37 @@ def render_module_docs(output_folder, module, template):
         name = doc["name"].split(".")[-1]
         doc["module"] = name
 
-    rst_path = os.path.join(output_folder, name + ".rst")
-    with open(rst_path, "w") as fd:
+    output_path = os.path.join(
+        output_folder, doc["module"] + "." + extension
+    )
+    with open(output_path, "w") as fd:
         fd.write(template.render(doc))
 
 
-def get_template(custom_template):
+def get_template(custom_template, markdown):
     env = Environment(loader=PackageLoader("ansible_doc_extractor"), trim_blocks=True)
     env.filters["rst_ify"] = rst_ify
     env.filters["to_yaml"]= to_yaml
     if custom_template:
+        env.filters["rst_ify"] = rst_ify
         template = env.from_string(custom_template.read())
         custom_template.close()
+        extension = "rst"
+    elif markdown:
+        env.filters["md_ify"] = md_ify
+        template = env.get_template("module.md.j2")
+        extension = "md"
     else:
+        env.filters["rst_ify"] = rst_ify
         template = env.get_template("module.rst.j2")
-    return template
+        extension = "rst"
+    return template, extension
 
 
-def render_docs(output, modules, custom_template):
-    template = get_template(custom_template)
+def render_docs(output, modules, custom_template, markdown):
+    template, extension = get_template(custom_template, markdown)
     for module in modules:
-        render_module_docs(output, module, template)
+        render_module_docs(output, module, template, extension)
 
 
 class ArgParser(argparse.ArgumentParser):
@@ -134,7 +155,12 @@ def create_argument_parser():
     )
     parser.add_argument(
         "--template", type=argparse.FileType('r'),
-        help="Custom Jinja2 template used to generate documentation"
+        help="Custom Jinja2 template used to generate documentation."
+    )
+    parser.add_argument(
+        "--markdown", action='store_true',
+        help="""Generate markdown output files instead of rst (default).
+                Ignored if --template is specified."""
     )
     return parser
 
@@ -148,4 +174,4 @@ def main():
         sys.exit(1)
 
     args = create_argument_parser().parse_args()
-    render_docs(args.output, args.module, args.template)
+    render_docs(args.output, args.module, args.template, args.markdown)
