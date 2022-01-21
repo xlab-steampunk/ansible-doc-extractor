@@ -105,23 +105,29 @@ def render_module_docs(output_folder, module, template, extension):
         fd.write(template.render(doc))
 
 
+def get_default_template(env, markdown):
+    if markdown:
+        return env.get_template("module.md.j2")
+    return env.get_template("module.rst.j2")
+
+
 def get_template(custom_template, markdown):
     env = Environment(loader=PackageLoader("ansible_doc_extractor"), trim_blocks=True)
     env.filters["rst_ify"] = rst_ify
-    env.filters["to_yaml"]= to_yaml
+    env.filters["md_ify"] = md_ify
+    env.filters["to_yaml"] = to_yaml
+
     if custom_template:
-        env.filters["rst_ify"] = rst_ify
         template = env.from_string(custom_template.read())
         custom_template.close()
-        extension = "rst"
-    elif markdown:
-        env.filters["md_ify"] = md_ify
-        template = env.get_template("module.md.j2")
+    else:
+        template = get_default_template(env, markdown)
+
+    if markdown:
         extension = "md"
     else:
-        env.filters["rst_ify"] = rst_ify
-        template = env.get_template("module.rst.j2")
         extension = "rst"
+
     return template, extension
 
 
@@ -155,12 +161,13 @@ def create_argument_parser():
     )
     parser.add_argument(
         "--template", type=argparse.FileType('r'),
-        help="Custom Jinja2 template used to generate documentation."
+        help="""Custom Jinja2 template used to generate documentation.
+        If option --markdown" is also listed, template must be md specific.
+        """
     )
     parser.add_argument(
         "--markdown", action='store_true',
-        help="""Generate markdown output files instead of rst (default).
-                Ignored if --template is specified."""
+        help="""Generate markdown output files instead of rst (default)."""
     )
     return parser
 
