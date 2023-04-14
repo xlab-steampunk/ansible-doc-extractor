@@ -12,46 +12,37 @@ except ImportError:
     HAS_ANSIBLE = False
 
 from jinja2 import Environment, PackageLoader
+from jinja2.utils import pass_context
+
+from antsibull_docs_parser import dom
+from antsibull_docs_parser.parser import parse, Context
+from antsibull_docs_parser.rst import to_rst_plain
+from antsibull_docs_parser.md import to_md
 
 import yaml
 
 
 _supported_templates = ["rst", "md"]
 
-# The rst_ify filter has been shamelessly stolen from the Ansible helpers in
-# hacking subfolder. So all of the credit goes to the Ansible authors.
 
-_ITALIC = re.compile(r"I\(([^)]+)\)")
-_BOLD = re.compile(r"B\(([^)]+)\)")
-_MODULE = re.compile(r"M\(([^)]+)\)")
-_URL = re.compile(r"U\(([^)]+)\)")
-_LINK = re.compile(r"L\(([^)]+), *([^)]+)\)")
-_CONST = re.compile(r"C\(([^)]+)\)")
-_RULER = re.compile(r"HORIZONTALLINE")
-
-
-def rst_ify(text):
-    t = _ITALIC.sub(r"*\1*", text)
-    t = _BOLD.sub(r"**\1**", t)
-    t = _MODULE.sub(r":ref:`\1 <\1_module>`", t)
-    t = _LINK.sub(r"`\1 <\2>`_", t)
-    t = _URL.sub(r"\1", t)
-    t = _CONST.sub(r"``\1``", t)
-    t = _RULER.sub(r"------------", t)
-
-    return t
+def get_context(j2_context):
+    params = {}
+    plugin_collection = j2_context.get('collection')
+    plugin_name = j2_context.get('module')
+    plugin_type = j2_context.get('plugin_type')
+    if plugin_collection is not None and plugin_name is not None and plugin_type is not None:
+        params['current_plugin'] = dom.PluginIdentifier(fqcn=f"{plugin_collection}.{plugin_name}", type=plugin_type)
+    return Context(**params)
 
 
-def md_ify(text):
-    t = _ITALIC.sub(r"*\1*", text)
-    t = _BOLD.sub(r"**\1**", t)
-    t = _MODULE.sub(r"[\1](\1_module)", t)
-    t = _LINK.sub(r"[\1](\2)", t)
-    t = _URL.sub(r"\1", t)
-    t = _CONST.sub(r"`\1`", t)
-    t = _RULER.sub(r"------------", t)
+@pass_context
+def rst_ify(j2_context, text):
+    return to_rst_plain(parse(text, get_context(j2_context)))
 
-    return t
+
+@pass_context
+def md_ify(j2_context, text):
+    return to_md(parse(text, get_context(j2_context)))
 
 
 def ensure_list(value):
