@@ -8,6 +8,10 @@ try:
     from ansible.plugins.loader import fragment_loader
     from ansible.utils import plugin_docs
     HAS_ANSIBLE = True
+    try:
+        from ansible.plugins.loader import init_plugin_loader
+    except ImportError:
+        pass
 except ImportError:
     HAS_ANSIBLE = False
 
@@ -124,6 +128,10 @@ def get_template(custom_template, markdown):
 
 def render_docs(output, modules, custom_template, markdown):
     template, extension = get_template(custom_template, markdown)
+    try:
+        init_plugin_loader()
+    except NameError:
+        pass
     for module in modules:
         render_module_docs(output, module, template, extension)
 
